@@ -1,9 +1,10 @@
-import 'package:blabla/services/location_service.dart';
-import 'package:blabla/ui/widgets/display/bla_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../model/ride/locations.dart';
+import '../../../ui/screens/states/location_state.dart';
 import '../../theme/theme.dart';
+import '../display/bla_divider.dart';
 
 ///
 /// A  Location Picker is a view to pick a Location:
@@ -19,6 +20,7 @@ class BlaLocationPicker extends StatefulWidget {
 
 class _BlaLocationPickerState extends State<BlaLocationPicker> {
   String currentSearchText = "";
+  late LocationState _locationState;
 
   void onTap(Location location) {
     Navigator.pop<Location>(context, location);
@@ -32,7 +34,11 @@ class _BlaLocationPickerState extends State<BlaLocationPicker> {
   void initState() {
     super.initState();
 
-    // Initilize the search bar if any initial location
+    // Get the LocationState from context and load all locations
+    _locationState = context.read<LocationState>();
+    _locationState.getAllLocations();
+
+    // Initialize the search bar if any initial location
     if (widget.initLocation != null) {
       setState(() {
         currentSearchText = widget.initLocation!.name;
@@ -50,7 +56,7 @@ class _BlaLocationPickerState extends State<BlaLocationPicker> {
     if (currentSearchText.length < 2) {
       return [];
     }
-    return LocationsService.availableLocations
+    return _locationState.locations
         .where(
           (location) => location.name.toUpperCase().contains(
             currentSearchText.toUpperCase(),
@@ -79,12 +85,16 @@ class _BlaLocationPickerState extends State<BlaLocationPicker> {
             SizedBox(height: 20),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredLocation.length,
-                itemBuilder: (context, index) => LocationTile(
-                  location: filteredLocation[index],
-                  onTap: onTap,
-                ),
+              child: Consumer<LocationState>(
+                builder: (context, locationState, _) {
+                  return ListView.builder(
+                    itemCount: filteredLocation.length,
+                    itemBuilder: (context, index) => LocationTile(
+                      location: filteredLocation[index],
+                      onTap: onTap,
+                    ),
+                  );
+                },
               ),
             ),
           ],

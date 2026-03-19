@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../data/repositories/location/location_repository_mock.dart';
 import '../../../model/ride/ride.dart';
 import '../../../model/ride_pref/ride_pref.dart';
 import '../../../services/ride_prefs_service.dart';
 import '../../../services/rides_service.dart';
+import '../../../ui/screens/states/location_state.dart';
 import '../../../utils/animations_util.dart' show AnimationUtils;
 import '../../theme/theme.dart';
 import 'widgets/ride_preference_modal.dart';
@@ -61,11 +65,15 @@ class _RidesSelectionScreenState extends State<RidesSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.only(
-          left: BlaSpacings.m, right: BlaSpacings.m, top: BlaSpacings.s),
-        child: Column(
+    return ChangeNotifierProvider(
+      create: (_) => LocationState(
+        locationRepository: LocationRepositoryMock(),
+      ),
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.only(
+            left: BlaSpacings.m, right: BlaSpacings.m, top: BlaSpacings.s),
+          child: Column(
           children: [
             RideSelectionHeader(
               ridePreference: selectedRidePreference,
@@ -87,6 +95,7 @@ class _RidesSelectionScreenState extends State<RidesSelectionScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

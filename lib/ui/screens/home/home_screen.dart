@@ -1,6 +1,7 @@
-import 'package:blabla/model/ride_pref/ride_pref.dart';
-import 'package:blabla/services/ride_prefs_service.dart';
+
 import 'package:flutter/material.dart';
+import 'package:refactoring/model/ride_pref/ride_pref.dart';
+import 'package:refactoring/services/ride_prefs_service.dart';
 import '../../../utils/animations_util.dart';
 import '../../theme/theme.dart';
 import '../../widgets/pickers/bla_ride_preference_picker.dart';

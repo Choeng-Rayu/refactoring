@@ -1,10 +1,14 @@
-import 'package:blabla/ui/widgets/buttons/bla_button.dart';
-import 'package:blabla/ui/widgets/display/bla_divider.dart';
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:refactoring/ui/widgets/buttons/bla_button.dart';
+import 'package:refactoring/ui/widgets/display/bla_divider.dart';
+
+import '../../../data/repositories/location/location_repository_mock.dart';
 import '../../../model/ride/locations.dart';
 import '../../../model/ride_pref/ride_pref.dart';
 import '../../../services/ride_prefs_service.dart';
+import '../../../ui/screens/states/location_state.dart';
 import '../../../utils/animations_util.dart';
 import '../../../utils/date_time_utils.dart';
 import '../../theme/theme.dart';
@@ -77,10 +81,15 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
   // ----------------------------------
 
   void onDeparturePressed() async {
-    // 1- Select a location
+    // 1- Select a location with provider context
     Location? selectedLocation = await Navigator.of(context).push<Location>(
       AnimationUtils.createBottomToTopRoute(
-        BlaLocationPicker(initLocation: departure),
+        ChangeNotifierProvider(
+          create: (_) => LocationState(
+            locationRepository: LocationRepositoryMock(),
+          ),
+          child: BlaLocationPicker(initLocation: departure),
+        ),
       ),
     );
 
@@ -93,10 +102,15 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
   }
 
   void onArrivalPressed() async {
-    // 1- Select a arrival
+    // 1- Select a arrival with provider context
     Location? selectedLocation = await Navigator.of(context).push<Location>(
       AnimationUtils.createBottomToTopRoute(
-        BlaLocationPicker(initLocation: arrival),
+        ChangeNotifierProvider(
+          create: (_) => LocationState(
+            locationRepository: LocationRepositoryMock(),
+          ),
+          child: BlaLocationPicker(initLocation: arrival),
+        ),  
       ),
     );
 
