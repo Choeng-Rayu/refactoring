@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../model/ride/locations.dart';
-import '../../../ui/screens/states/location_state.dart';
+import '../../states/location_state.dart';
 import '../../theme/theme.dart';
 import '../display/bla_divider.dart';
 

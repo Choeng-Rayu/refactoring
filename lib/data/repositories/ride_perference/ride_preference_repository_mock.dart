@@ -12,7 +12,6 @@ class RidePreferenceRepositoryMock implements RidePreferenceRepository{
 
   @override
   void onAddHistoryPreference(RidePreference preference) {
-    // TODO: implement onAddHistoryPreference
     _historyPreferences.add(preference);
   }
 

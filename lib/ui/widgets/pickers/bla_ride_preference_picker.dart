@@ -8,7 +8,7 @@ import '../../../data/repositories/location/location_repository_mock.dart';
 import '../../../model/ride/locations.dart';
 import '../../../model/ride_pref/ride_pref.dart';
 import '../../../services/ride_prefs_service.dart';
-import '../../../ui/screens/states/location_state.dart';
+import '../../states/location_state.dart';
 import '../../../utils/animations_util.dart';
 import '../../../utils/date_time_utils.dart';
 import '../../theme/theme.dart';

@@ -1,7 +1,9 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:refactoring/data/repositories/ride_perference/ride_preference_repository_mock.dart';
 import 'package:refactoring/model/ride_pref/ride_pref.dart';
-import 'package:refactoring/services/ride_prefs_service.dart';
+import '../../../ui/states/ride_preference_state.dart';
 import '../../../utils/animations_util.dart';
 import '../../theme/theme.dart';
 import '../../widgets/pickers/bla_ride_preference_picker.dart';
@@ -24,21 +26,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   void onRidePrefSelected(RidePreference selectedPreference) async {
-    // 1- Ask the service to update the current preference
-    RidePrefsService.selectPreference(selectedPreference);
+    // 1- Get the state and update the current preference
+    context.read<RidePreferenceState>().onSelectedPreference(selectedPreference);
 
     // 2 - Navigate to the rides screen
     await Navigator.of(
       context,
     ).push(AnimationUtils.createBottomToTopRoute(RidesSelectionScreen()));
-
-    // 3 - After wait  - Update the state   - TODO Improve this with proper state managagement
-    setState(() {});
   }
 
   @override
   Widget build(context) {
-    return Stack(children: [_buildBackground(), _buildForeground()]);
+    return ChangeNotifierProvider(
+      create: (_) => RidePreferenceState(
+        ridePreferenceRepositoryMock: RidePreferenceRepositoryMock(),
+      ),
+      child: Stack(children: [_buildBackground(), _buildForeground()]),
+    );
   }
 
   Widget _buildForeground() {
@@ -61,20 +65,24 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.white, // White background
             borderRadius: BorderRadius.circular(16), // Rounded corners
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 2 - THE FORM
-              BlaRidePreferencePicker(
-                initRidePreference: RidePrefsService.selectedPreference,
-                onRidePreferenceSelected: onRidePrefSelected,
-              ),
-              SizedBox(height: BlaSpacings.m),
+          child: Consumer<RidePreferenceState>(
+            builder: (context, ridePreferenceState, _) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 2 - THE FORM
+                  BlaRidePreferencePicker(
+                    initRidePreference: ridePreferenceState.selectedPreference,
+                    onRidePreferenceSelected: onRidePrefSelected,
+                  ),
+                  SizedBox(height: BlaSpacings.m),
 
-              // 3 - THE HISTORY
-              _buildHistory(),
-            ],
+                  // 3 - THE HISTORY
+                  _buildHistory(),
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -82,20 +90,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHistory() {
-    // Reverse the history of preferences
-    List<RidePreference> history = RidePrefsService.preferenceHistory.reversed
-        .toList();
-    return SizedBox(
-      height: 200, // Set a fixed height
-      child: ListView.builder(
-        shrinkWrap: true, // Fix ListView height issue
-        physics: AlwaysScrollableScrollPhysics(),
-        itemCount: history.length,
-        itemBuilder: (ctx, index) => HomeHistoryTile(
-          ridePref: history[index],
-          onPressed: () => onRidePrefSelected(history[index]),
-        ),
-      ),
+    return Consumer<RidePreferenceState>(
+      builder: (context, ridePreferenceState, _) {
+        // Reverse the history of preferences
+        List<RidePreference> history =
+            ridePreferenceState.historyPreferences.reversed.toList();
+        return SizedBox(
+          height: 200, // Set a fixed height
+          child: ListView.builder(
+            shrinkWrap: true, // Fix ListView height issue
+            physics: AlwaysScrollableScrollPhysics(),
+            itemCount: history.length,
+            itemBuilder: (ctx, index) => HomeHistoryTile(
+              ridePref: history[index],
+              onPressed: () => onRidePrefSelected(history[index]),
+            ),
+          ),
+        );
+      },
     );
   }
 

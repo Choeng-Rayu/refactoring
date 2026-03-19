@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/repositories/location/location_repository_mock.dart';
+import '../../../data/repositories/ride_perference/ride_preference_repository_mock.dart';
 import '../../../model/ride/ride.dart';
 import '../../../model/ride_pref/ride_pref.dart';
-import '../../../services/ride_prefs_service.dart';
 import '../../../services/rides_service.dart';
-import '../../../ui/screens/states/location_state.dart';
+import '../../../ui/states/location_state.dart';
+import '../../../ui/states/ride_preference_state.dart';
 import '../../../utils/animations_util.dart' show AnimationUtils;
 import '../../theme/theme.dart';
 import 'widgets/ride_preference_modal.dart';
@@ -39,8 +40,9 @@ class _RidesSelectionScreenState extends State<RidesSelectionScreen> {
     // Later
   }
 
-  RidePreference get selectedRidePreference =>
-      RidePrefsService.selectedPreference!; // not null at this state
+  RidePreference get selectedRidePreference {
+    return context.read<RidePreferenceState>().selectedPreference!;
+  }
 
   List<Ride> get matchingRides =>
       RidesService.getRidesFor(selectedRidePreference);
@@ -50,52 +52,68 @@ class _RidesSelectionScreenState extends State<RidesSelectionScreen> {
     RidePreference? newPreference = await Navigator.of(context)
         .push<RidePreference>(
           AnimationUtils.createRightToLeftRoute(
-            RidePreferenceModal(initialPreference: selectedRidePreference),
+            ChangeNotifierProvider.value(
+              value: context.read<RidePreferenceState>(),
+              child: RidePreferenceModal(
+                  initialPreference: selectedRidePreference),
+            ),
           ),
         );
 
     if (newPreference != null) {
-      // 2 - Ask the service to update the current preference
-      RidePrefsService.selectPreference(newPreference);
-
-      // 3 -   Update the widget state  - TODO Improve this with proper state managagement
-      setState(() {});
+      // 2 - Update the state with the new preference
+      context.read<RidePreferenceState>().onSelectedPreference(newPreference);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => LocationState(
-        locationRepository: LocationRepositoryMock(),
-      ),
-      child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.only(
-            left: BlaSpacings.m, right: BlaSpacings.m, top: BlaSpacings.s),
-          child: Column(
-          children: [
-            RideSelectionHeader(
-              ridePreference: selectedRidePreference,
-              onBackPressed: onBackTap,
-              onFilterPressed: onFilterPressed,
-              onPreferencePressed: onPreferencePressed,
-            ),
-        
-            SizedBox(height: 100),
-        
-            Expanded(
-              child: ListView.builder(
-                itemCount: matchingRides.length,
-                itemBuilder: (ctx, index) => RideSelectionTile(
-                  ride: matchingRides[index],
-                  onPressed: () => onRideSelected(matchingRides[index]),
-                ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => RidePreferenceState(
+            ridePreferenceRepositoryMock: RidePreferenceRepositoryMock(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LocationState(
+            locationRepository: LocationRepositoryMock(),
+          ),
+        ),
+      ],
+      child: Consumer<RidePreferenceState>(
+        builder: (context, ridePreferenceState, _) {
+          return Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.only(
+                left: BlaSpacings.m,
+                right: BlaSpacings.m,
+                top: BlaSpacings.s,
+              ),
+              child: Column(
+                children: [
+                  RideSelectionHeader(
+                    ridePreference: selectedRidePreference,
+                    onBackPressed: onBackTap,
+                    onFilterPressed: onFilterPressed,
+                    onPreferencePressed: onPreferencePressed,
+                  ),
+                  SizedBox(height: 100),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: matchingRides.length,
+                      itemBuilder: (ctx, index) => RideSelectionTile(
+                        ride: matchingRides[index],
+                        onPressed: () =>
+                            onRideSelected(matchingRides[index]),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          );
+        },
       ),
     );
   }
