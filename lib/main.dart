@@ -1,10 +1,21 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'ui/screens/home/home_screen.dart';
 import 'ui/theme/theme.dart';
 
 void main() {
-   runApp(const BlaBlaApp()); 
+  //  runApp(const BlaBlaApp()); 
+
+  runApp(
+    MultiProvider(
+      providers: [
+        // Add your providers here
+        
+      ],
+      child: const BlaBlaApp(),
+    ),
+  );
 }
 
 
